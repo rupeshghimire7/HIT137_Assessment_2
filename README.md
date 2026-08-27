@@ -2,7 +2,7 @@
 
 HIT137 Software Now – Assessment 2, Sydney Group 5. This repository contains our group implementation of the assignment, including source code, test files, and outputs.
 
-**Question 1 – Cipher:** Hemanta Adhikari (s403355) & John Karki
+**Question 1 – Cipher:** Hemanta Adhikari (s403355) & John Karki ()
 
 ## Repository Structure
 
@@ -34,7 +34,7 @@ HIT137 Software Now – Assessment 2, Sydney Group 5. This repository contains o
 
 ### Cipher rules
 
-| Character range | Shift applied |
+| | Character range | Shift applied |
 |---|---|
 | Lowercase `a`–`n` | forward by `shift1 * shift2` |
 | Lowercase `o`–`z` | backward by `shift1 + shift2` |
@@ -42,7 +42,9 @@ HIT137 Software Now – Assessment 2, Sydney Group 5. This repository contains o
 | Uppercase `N`–`Z` | forward by `shift2 ** 2` |
 | Digits `0`–`9` | forward by `shift1 - shift2` |
 | Everything else (spaces, punctuation, symbols, newlines) | unchanged |
+| Everything else (spaces, punctuation, symbols, newlines) | unchanged |
 
+Each range wraps independently (modular arithmetic), so encryption is fully reversible by applying the inverse shift in `decryption.py`.
 Each range wraps independently (modular arithmetic), so encryption is fully reversible by applying the inverse shift in `decryption.py`.
 
 ### How to run
@@ -65,11 +67,17 @@ You will be prompted for `shift1` and `shift2` (non-negative integers). The prog
 - **`actions/decryption.py`** – `shift_character_in_range`, `decrypt_character`, `decrypt_file`
 - **`verification/verify.py`** – `verify_files(original_path, decrypted_path) -> bool`
 - **`cipher.py`** – `ask_for_shift`, `main` (entry point, ties the three modules together)
+- **`actions/encryption.py`** – `shift_character_in_range`, `encrypt_character`, `encrypt_file`
+- **`actions/decryption.py`** – `shift_character_in_range`, `decrypt_character`, `decrypt_file`
+- **`verification/verify.py`** – `verify_files(original_path, decrypted_path) -> bool`
+- **`cipher.py`** – `ask_for_shift`, `main` (entry point, ties the three modules together)
 
 ### Tests
 
 Tests live in `Q1_Cipher/tests` and use `pytest` with `monkeypatch`/`tmp_path` fixtures to isolate file I/O and simulate user input. `conftest.py` adds the project root to `sys.path` so the `actions`/`verification` packages can be imported directly.
+Tests live in `Q1_Cipher/tests` and use `pytest` with `monkeypatch`/`tmp_path` fixtures to isolate file I/O and simulate user input. `conftest.py` adds the project root to `sys.path` so the `actions`/`verification` packages can be imported directly.
 
+Run all Q1 tests from `Q1_Cipher/` (either command works):
 Run all Q1 tests from `Q1_Cipher/` (either command works):
 
 ```bash
@@ -83,12 +91,16 @@ python -m pytest tests/
 ```
 
 Add `-v` for verbose per-test output, e.g. `python -m pytest tests/ -v`.
+Add `-v` for verbose per-test output, e.g. `python -m pytest tests/ -v`.
 
 ### Test run output
 
 Standard run:
 
+Standard run:
+
 ```
+$ pytest
 $ pytest
 ================================= test session starts =================================
 platform linux -- Python 3.13.5, pytest-8.3.4, pluggy-1.5.0
@@ -172,3 +184,4 @@ Coverage includes:
 ## Group Contributions
 
 All work has been tracked via commits to this GitHub repository throughout development, as required by the assignment guidelines. See `github_link.txt` for the repository link.
+
