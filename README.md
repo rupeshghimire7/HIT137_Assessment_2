@@ -2,7 +2,7 @@
 
 Software Now – Assessment 2 (HIT137, Sydney Group 5). This repository is our implementation of the assignment, with source code, test files and outputs.
 
-It is the same with Question 1 – Cipher!For Question 1 – Cipher! it is the same thing.
+Task 1 – Cipher ( Hemanta Adhikari (s403355) & John Karki ())
 
 ## Repository Structure
 
