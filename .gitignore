@@ -1,0 +1,35 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# IDEs & System Files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Generated Assignment Artifacts (Runtime Output)
+!encrypted_text.txt
+!decrypted_text.txt
+
+# Keep tracking input spec files and output references
+!raw_text.txt
+!sample_input.txt
+!sample_output.txt
+!github_link.txt
