@@ -71,7 +71,7 @@ python decryption.py
 ```
 Enter the same shift values used during encryption and it will decrypt `text_files/encrypted_text.txt` into `text_files/decrypted_text.txt`.
 
-**To test verification only (John's part):**
+**To test verification only (Hemanta's part):**
 ```bash
 python verify.py
 ```
