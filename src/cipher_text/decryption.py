@@ -1,6 +1,6 @@
 """
 HIT137 - Software Now - Assessment 2 - Sydney Group 5
-Question 1 - Decryption module (Task 1: John Karki & Hemanta Adhikari)
+Question 1 - Decryption module (Task 1: Hemanta Adhikari(s403355) & John Karki (s403518))
  
 Reverses the cipher applied by encryption.py.
 """
@@ -91,3 +91,32 @@ def decrypt_file(shift1, shift2, input_path, output_path):
             + ": "
             + str(error)
         )
+
+if __name__ == "__main__":
+    ENCRYPTED_FILE = "text_files/encrypted_text.txt"
+    DECRYPTED_FILE = "text_files/decrypted_text.txt"
+
+    def ask_for_shift(message):
+        while True:
+            user_input = input(message)
+            try:
+                number = int(user_input)
+            except ValueError:
+                print("Not a valid whole number. Please try again.")
+                continue
+            if number < 0:
+                print("The number is not allowed to be negative. Please try again.")
+                continue
+            return number
+
+    shift1 = ask_for_shift("Enter shift1 (non-negative integer): ")
+    shift2 = ask_for_shift("Enter shift2 (non-negative integer): ")
+
+    print()
+    print("Step 2: Decrypting", ENCRYPTED_FILE, "...")
+
+    try:
+        decrypt_file(shift1, shift2, ENCRYPTED_FILE, DECRYPTED_FILE)
+        print("Done. Decrypted file saved as", DECRYPTED_FILE)
+    except (FileNotFoundError, ValueError) as error:
+        print("Decryption failed:", error)

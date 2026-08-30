@@ -1,9 +1,9 @@
 import pytest
 
-from decryption import (
+from encryption import (
     shift_character_in_range,
-    decrypt_character,
-    decrypt_file
+    encrypt_character,
+    encrypt_file
 )
 
 
@@ -31,87 +31,87 @@ def test_shift_character_backward():
     assert result == "a"
 
 
-def test_decrypt_lowercase_character():
-    # Encryption changes a -> g.
-    # Decryption should change g -> a.
-    result = decrypt_character("g", 2, 3)
+def test_encrypt_lowercase_character():
+    # 2 * 3 = 6
+    # a moved 6 places becomes g
+    result = encrypt_character("a", 2, 3)
 
-    assert result == "a"
-
-
-def test_decrypt_lowercase_second_range():
-    # Encryption changes o -> v.
-    # Decryption should change v -> o.
-    result = decrypt_character("v", 2, 3)
-
-    assert result == "o"
+    assert result == "g"
 
 
-def test_decrypt_uppercase_first_range():
-    # Encryption changes B -> M.
-    # Decryption should change M -> B.
-    result = decrypt_character("M", 2, 3)
+def test_encrypt_lowercase_second_range():
+    # -(2 + 3) = -5
+    # o moved backwards within o-z becomes v
+    result = encrypt_character("o", 2, 3)
 
-    assert result == "B"
-
-
-def test_decrypt_uppercase_second_range():
-    # Encryption changes N -> W.
-    # Decryption should change W -> N.
-    result = decrypt_character("W", 2, 3)
-
-    assert result == "N"
+    assert result == "v"
 
 
-def test_decrypt_number():
-    # Encryption changes 5 -> 4.
-    # Decryption should change 4 -> 5.
-    result = decrypt_character("4", 2, 3)
+def test_encrypt_uppercase_first_range():
+    # B moved backwards by 2:
+    # B -> A -> M
+    result = encrypt_character("B", 2, 3)
 
-    assert result == "5"
+    assert result == "M"
+
+
+def test_encrypt_uppercase_second_range():
+    # 3 * 3 = 9
+    # N moved 9 places becomes W
+    result = encrypt_character("N", 2, 3)
+
+    assert result == "W"
+
+
+def test_encrypt_number():
+    # 2 - 3 = -1
+    # 5 becomes 4
+    result = encrypt_character("5", 2, 3)
+
+    assert result == "4"
 
 
 def test_special_character_is_unchanged():
-    result = decrypt_character("!", 2, 3)
+    result = encrypt_character("!", 2, 3)
 
     assert result == "!"
 
 
 def test_space_is_unchanged():
-    result = decrypt_character(" ", 2, 3)
+    result = encrypt_character(" ", 2, 3)
 
     assert result == " "
 
 
-def test_decrypt_file(tmp_path):
-    encrypted_file = tmp_path / "encrypted.txt"
-    decrypted_file = tmp_path / "decrypted.txt"
+def test_encrypt_file(tmp_path):
+    input_file = tmp_path / "input.txt"
+    output_file = tmp_path / "output.txt"
 
-    encrypted_file.write_text(
-        "ghi012!",
+    input_file.write_text(
+        "abc123!",
         encoding="utf-8"
     )
 
-    decrypt_file(
+    encrypt_file(
         2,
         3,
-        str(encrypted_file),
-        str(decrypted_file)
+        str(input_file),
+        str(output_file)
     )
 
-    decrypted_text = decrypted_file.read_text(
+    encrypted_text = output_file.read_text(
         encoding="utf-8"
     )
 
-    assert decrypted_text == "abc123!"
+    assert encrypted_text == "ghi012!"
 
 
 def test_negative_shift1_is_rejected(tmp_path):
-    input_file = tmp_path / "encrypted.txt"
-    output_file = tmp_path / "decrypted.txt"
+    input_file = tmp_path / "input.txt"
+    output_file = tmp_path / "output.txt"
 
     input_file.write_text(
-        "ghi",
+        "abc",
         encoding="utf-8"
     )
 
@@ -119,7 +119,7 @@ def test_negative_shift1_is_rejected(tmp_path):
         ValueError,
         match="Shifts 1 and 2 cannot be negative."
     ):
-        decrypt_file(
+        encrypt_file(
             -1,
             3,
             str(input_file),
@@ -128,11 +128,11 @@ def test_negative_shift1_is_rejected(tmp_path):
 
 
 def test_negative_shift2_is_rejected(tmp_path):
-    input_file = tmp_path / "encrypted.txt"
-    output_file = tmp_path / "decrypted.txt"
+    input_file = tmp_path / "input.txt"
+    output_file = tmp_path / "output.txt"
 
     input_file.write_text(
-        "ghi",
+        "abc",
         encoding="utf-8"
     )
 
@@ -140,7 +140,7 @@ def test_negative_shift2_is_rejected(tmp_path):
         ValueError,
         match="Shifts 1 and 2 cannot be negative."
     ):
-        decrypt_file(
+        encrypt_file(
             2,
             -3,
             str(input_file),
@@ -153,7 +153,7 @@ def test_missing_input_file():
         FileNotFoundError,
         match="Could not find the file"
     ):
-        decrypt_file(
+        encrypt_file(
             2,
             3,
             "missing_file.txt",
@@ -174,7 +174,7 @@ def test_empty_input_file(tmp_path):
         ValueError,
         match="is empty"
     ):
-        decrypt_file(
+        encrypt_file(
             2,
             3,
             str(input_file),
