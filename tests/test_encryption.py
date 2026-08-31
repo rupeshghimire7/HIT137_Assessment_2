@@ -1,6 +1,6 @@
 import pytest
 
-from encryption import (
+from src.cipher_text.encryption import (
     shift_character_in_range,
     encrypt_character,
     encrypt_file

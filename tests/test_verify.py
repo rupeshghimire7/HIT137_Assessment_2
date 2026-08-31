@@ -1,6 +1,6 @@
 import pytest
 
-from verify import verify_files
+from src.cipher_text.verify import verify_files
 
 
 def test_matching_files_return_true(tmp_path, capsys):

@@ -18,9 +18,9 @@ prompted for shift1 and shift2, and the program will automatically
 encrypt raw_text.txt, decrypt the result, and verify the round trip.
 """
 
-from encryption import encrypt_file
-from decryption import decrypt_file
-from verify import verify_files
+from .encryption import encrypt_file
+from .decryption import decrypt_file
+from .verify import verify_files
 
 RAW_FILE = "text_files/raw_text.txt"
 ENCRYPTED_FILE = "text_files/encrypted_text.txt"

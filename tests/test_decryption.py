@@ -1,6 +1,6 @@
 import pytest
 
-from decryption import (
+from src.cipher_text.decryption import (
     shift_character_in_range,
     decrypt_character,
     decrypt_file

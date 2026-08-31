@@ -1,4 +1,4 @@
-from cipher import ask_for_shift, main
+from src.cipher_text.cipher import ask_for_shift, main
 
 
 def test_ask_for_shift_accepts_valid_number(monkeypatch):
