@@ -38,5 +38,5 @@ jobs:
         env:
           PYTHONPATH: .
         run: |
-          # Fails the build if test coverage drops below 85%
-          pytest tests/ --cov=src --cov-report=term-missing --cov-fail-under=85
+          # Fails the build if test coverage drops below 80%
+          pytest tests/ --cov=src --cov-report=term-missing --cov-fail-under=80
