@@ -1,6 +1,6 @@
 """
 HIT137 - Software Now - Assessment 2 - Sydney Group 5
-Question 1 - Encryption module (Task 1: John Karki & Hemanta Adhikari)
+Question 1 - Encryption module (Task 1: Hemanta Adhikari(s403355) & John Karki (s403518))
  
 Encrypts text using the assignment's custom substitution cipher.
 """
@@ -92,3 +92,32 @@ def encrypt_file(shift1, shift2, input_path, output_path):
             + ": "
             + str(error)
         )
+
+if __name__ == "__main__":
+    RAW_FILE       = "text_files/raw_text.txt"
+    ENCRYPTED_FILE = "text_files/encrypted_text.txt"
+
+    def ask_for_shift(message):
+        while True:
+            user_input = input(message)
+            try:
+                number = int(user_input)
+            except ValueError:
+                print("Not a valid whole number. Please try again.")
+                continue
+            if number < 0:
+                print("The number is not allowed to be negative. Please try again.")
+                continue
+            return number
+
+    shift1 = ask_for_shift("Enter shift1 (non-negative integer): ")
+    shift2 = ask_for_shift("Enter shift2 (non-negative integer): ")
+
+    print()
+    print("Step 1: Encrypting", RAW_FILE, "...")
+
+    try:
+        encrypt_file(shift1, shift2, RAW_FILE, ENCRYPTED_FILE)
+        print("Done. Encrypted file saved as", ENCRYPTED_FILE)
+    except (FileNotFoundError, ValueError) as error:
+        print("Encryption failed:", error)

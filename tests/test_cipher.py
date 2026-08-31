@@ -1,182 +1,194 @@
-import pytest
-
-from src.cipher_text.encryption import (
-    shift_character_in_range,
-    encrypt_character,
-    encrypt_file
-)
+from cipher import ask_for_shift, main
 
 
-def test_shift_character_forward():
-    result = shift_character_in_range(
-        "a", 1, "a", "n"
+def test_ask_for_shift_accepts_valid_number(monkeypatch):
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda message: "5"
     )
 
-    assert result == "b"
-
-
-def test_shift_character_wraps_forward():
-    result = shift_character_in_range(
-        "n", 1, "a", "n"
+    result = ask_for_shift(
+        "Enter shift: "
     )
 
-    assert result == "a"
+    assert result == 5
 
 
-def test_shift_character_backward():
-    result = shift_character_in_range(
-        "b", -1, "a", "n"
+def test_ask_for_shift_accepts_zero(monkeypatch):
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda message: "0"
     )
 
-    assert result == "a"
+    result = ask_for_shift(
+        "Enter shift: "
+    )
+
+    assert result == 0
 
 
-def test_encrypt_lowercase_character():
-    # 2 * 3 = 6
-    # a moved 6 places becomes g
-    result = encrypt_character("a", 2, 3)
+def test_ask_for_shift_rejects_text(monkeypatch):
+    inputs = iter([
+        "hello",
+        "5"
+    ])
 
-    assert result == "g"
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda message: next(inputs)
+    )
 
+    result = ask_for_shift(
+        "Enter shift: "
+    )
 
-def test_encrypt_lowercase_second_range():
-    # -(2 + 3) = -5
-    # o moved backwards within o-z becomes v
-    result = encrypt_character("o", 2, 3)
-
-    assert result == "v"
-
-
-def test_encrypt_uppercase_first_range():
-    # B moved backwards by 2:
-    # B -> A -> M
-    result = encrypt_character("B", 2, 3)
-
-    assert result == "M"
+    assert result == 5
 
 
-def test_encrypt_uppercase_second_range():
-    # 3 * 3 = 9
-    # N moved 9 places becomes W
-    result = encrypt_character("N", 2, 3)
+def test_ask_for_shift_rejects_negative_number(monkeypatch):
+    inputs = iter([
+        "-5",
+        "3"
+    ])
 
-    assert result == "W"
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda message: next(inputs)
+    )
 
+    result = ask_for_shift(
+        "Enter shift: "
+    )
 
-def test_encrypt_number():
-    # 2 - 3 = -1
-    # 5 becomes 4
-    result = encrypt_character("5", 2, 3)
-
-    assert result == "4"
-
-
-def test_special_character_is_unchanged():
-    result = encrypt_character("!", 2, 3)
-
-    assert result == "!"
+    assert result == 3
 
 
-def test_space_is_unchanged():
-    result = encrypt_character(" ", 2, 3)
+def test_ask_for_shift_rejects_decimal(monkeypatch):
+    inputs = iter([
+        "2.5",
+        "4"
+    ])
 
-    assert result == " "
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda message: next(inputs)
+    )
+
+    result = ask_for_shift(
+        "Enter shift: "
+    )
+
+    assert result == 4
 
 
-def test_encrypt_file(tmp_path):
-    input_file = tmp_path / "input.txt"
-    output_file = tmp_path / "output.txt"
+def test_main_completes_encryption_and_decryption(
+    monkeypatch,
+    tmp_path,
+    capsys
+):
+    monkeypatch.chdir(tmp_path)
 
-    input_file.write_text(
-        "abc123!",
+    original_text = "Hello World 123! abc XYZ"
+
+    (tmp_path / "text_files").mkdir()
+
+    (
+        tmp_path / "text_files" / "raw_text.txt"
+    ).write_text(
+        original_text,
         encoding="utf-8"
     )
 
-    encrypt_file(
-        2,
-        3,
-        str(input_file),
-        str(output_file)
+    inputs = iter([
+        "2",
+        "3"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda message: next(inputs)
     )
 
-    encrypted_text = output_file.read_text(
+    main()
+
+    encrypted_file = (
+        tmp_path / "text_files" / "encrypted_text.txt"
+    )
+
+    decrypted_file = (
+        tmp_path / "text_files" / "decrypted_text.txt"
+    )
+
+    assert encrypted_file.exists()
+    assert decrypted_file.exists()
+
+    decrypted_text = decrypted_file.read_text(
         encoding="utf-8"
     )
 
-    assert encrypted_text == "ghi012!"
+    assert decrypted_text == original_text
+
+    captured = capsys.readouterr()
+
+    assert "Step 1: Encrypting" in captured.out
+    assert "Step 2: Decrypting" in captured.out
+    assert "Step 3: Checking" in captured.out
+    assert "Success!" in captured.out
 
 
-def test_negative_shift1_is_rejected(tmp_path):
-    input_file = tmp_path / "input.txt"
-    output_file = tmp_path / "output.txt"
+def test_main_handles_missing_raw_file(
+    monkeypatch,
+    tmp_path,
+    capsys
+):
+    monkeypatch.chdir(tmp_path)
 
-    input_file.write_text(
-        "abc",
-        encoding="utf-8"
+    inputs = iter([
+        "2",
+        "3"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda message: next(inputs)
     )
 
-    with pytest.raises(
-        ValueError,
-        match="Shifts 1 and 2 cannot be negative."
-    ):
-        encrypt_file(
-            -1,
-            3,
-            str(input_file),
-            str(output_file)
-        )
+    main()
+
+    captured = capsys.readouterr()
+
+    assert "Encryption failed:" in captured.out
 
 
-def test_negative_shift2_is_rejected(tmp_path):
-    input_file = tmp_path / "input.txt"
-    output_file = tmp_path / "output.txt"
+def test_main_handles_empty_raw_file(
+    monkeypatch,
+    tmp_path,
+    capsys
+):
+    monkeypatch.chdir(tmp_path)
 
-    input_file.write_text(
-        "abc",
-        encoding="utf-8"
-    )
+    (tmp_path / "text_files").mkdir()
 
-    with pytest.raises(
-        ValueError,
-        match="Shifts 1 and 2 cannot be negative."
-    ):
-        encrypt_file(
-            2,
-            -3,
-            str(input_file),
-            str(output_file)
-        )
-
-
-def test_missing_input_file():
-    with pytest.raises(
-        FileNotFoundError,
-        match="Could not find the file"
-    ):
-        encrypt_file(
-            2,
-            3,
-            "missing_file.txt",
-            "output.txt"
-        )
-
-
-def test_empty_input_file(tmp_path):
-    input_file = tmp_path / "empty.txt"
-    output_file = tmp_path / "output.txt"
-
-    input_file.write_text(
+    (
+        tmp_path / "text_files" / "raw_text.txt"
+    ).write_text(
         "",
         encoding="utf-8"
     )
 
-    with pytest.raises(
-        ValueError,
-        match="is empty"
-    ):
-        encrypt_file(
-            2,
-            3,
-            str(input_file),
-            str(output_file)
-        )
+    inputs = iter([
+        "2",
+        "3"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda message: next(inputs)
+    )
+
+    main()
+
+    captured = capsys.readouterr()
+
+    assert "Encryption failed:" in captured.out
+    assert "is empty" in captured.out
