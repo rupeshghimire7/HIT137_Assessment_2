@@ -1,0 +1,42 @@
+name: HIT137 Assessment2 CI
+
+on:
+  push:
+    branches: [ "main", "rupesh" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  validate-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff mypy pytest pytest-cov
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Lint and Format (Ruff)
+        run: |
+          ruff check src/ tests/
+          ruff format --check src/ tests/
+
+      # - name: Type Checking (Mypy)
+      #   # mypy ensures our typed function signatures (e.g., input_path: str) are respected
+      #   run: mypy src/ --ignore-missing-imports
+
+      - name: Run Tests with Coverage
+        env:
+          PYTHONPATH: .
+        run: |
+          # Fails the build if test coverage drops below 80%
+          pytest tests/ --cov=src --cov-report=term-missing --cov-fail-under=80
