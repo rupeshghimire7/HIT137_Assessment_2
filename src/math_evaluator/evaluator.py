@@ -1,8 +1,12 @@
 import os
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any
 
 
-def tokenize(expr: str) -> List[Tuple[str, Union[str, None]]]:
+class EvaluationOutputError(OSError):
+    """Raised when the evaluator cannot write the output file."""
+
+
+def tokenize(expr: str) -> list[tuple[str, str | None]]:
     """
     Scans a mathematical expression and breaks it down into a list of typed tokens.
 
@@ -15,7 +19,7 @@ def tokenize(expr: str) -> List[Tuple[str, Union[str, None]]]:
     Raises:
         ValueError: If an invalid character or malformed number is encountered.
     """
-    tokens: List[Tuple[str, Union[str, None]]] = []
+    tokens: list[tuple[str, str | None]] = []
     i = 0
     n = len(expr)
 
@@ -30,7 +34,7 @@ def tokenize(expr: str) -> List[Tuple[str, Union[str, None]]]:
             start = i
             while i < n and expr[i].isdigit():
                 i += 1
-            if i < n and expr[i] == '.':
+            if i < n and expr[i] == ".":
                 i += 1
                 if i >= n or not expr[i].isdigit():
                     raise ValueError(
@@ -39,31 +43,31 @@ def tokenize(expr: str) -> List[Tuple[str, Union[str, None]]]:
                     )
                 while i < n and expr[i].isdigit():
                     i += 1
-            tokens.append(('NUM', expr[start:i]))
+            tokens.append(("NUM", expr[start:i]))
             continue
 
-        if c in '+-*/%^':
-            tokens.append(('OP', c))
+        if c in "+-*/%^":
+            tokens.append(("OP", c))
             i += 1
             continue
 
-        if c == '(':
-            tokens.append(('LPAREN', '('))
+        if c == "(":
+            tokens.append(("LPAREN", "("))
             i += 1
             continue
 
-        if c == ')':
-            tokens.append(('RPAREN', ')'))
+        if c == ")":
+            tokens.append(("RPAREN", ")"))
             i += 1
             continue
 
         raise ValueError(f"Unexpected character {c!r} at position {i}")
 
-    tokens.append(('END', None))
+    tokens.append(("END", None))
     return tokens
 
 
-def tokens_to_string(tokens: List[Tuple[str, Union[str, None]]]) -> str:
+def tokens_to_string(tokens: list[tuple[str, str | None]]) -> str:
     """
     Formats a list of tokens into the required string representation.
 
@@ -75,26 +79,26 @@ def tokens_to_string(tokens: List[Tuple[str, Union[str, None]]]) -> str:
     """
     parts = []
     for ttype, value in tokens:
-        if ttype == 'END':
-            parts.append('[END]')
+        if ttype == "END":
+            parts.append("[END]")
         else:
-            parts.append(f'[{ttype}:{value}]')
-    return ' '.join(parts)
+            parts.append(f"[{ttype}:{value}]")
+    return " ".join(parts)
 
 
-def _peek(tokens: List[Tuple[str, Any]], pos: List[int]) -> Tuple[str, Any]:
+def _peek(tokens: list[tuple[str, Any]], pos: list[int]) -> tuple[str, Any]:
     """Returns the current token without consuming it."""
     return tokens[pos[0]]
 
 
-def _advance(tokens: List[Tuple[str, Any]], pos: List[int]) -> Tuple[str, Any]:
+def _advance(tokens: list[tuple[str, Any]], pos: list[int]) -> tuple[str, Any]:
     """Consumes the current token and advances the position pointer."""
     tok = tokens[pos[0]]
     pos[0] += 1
     return tok
 
 
-def parse(tokens: List[Tuple[str, Any]]) -> Tuple[str, Any]:
+def parse(tokens: list[tuple[str, Any]]) -> tuple[str, Any]:
     """
     Top-level entry point to parse a full token list into an Abstract Syntax Tree (AST).
 
@@ -109,12 +113,12 @@ def parse(tokens: List[Tuple[str, Any]]) -> Tuple[str, Any]:
     """
     pos = [0]
     node = parse_expression(tokens, pos)
-    if _peek(tokens, pos)[0] != 'END':
+    if _peek(tokens, pos)[0] != "END":
         raise ValueError(f"Unexpected trailing token {_peek(tokens, pos)}")
     return node
 
 
-def parse_expression(tokens: List[Tuple[str, Any]], pos: List[int]) -> Tuple[str, Any]:
+def parse_expression(tokens: list[tuple[str, Any]], pos: list[int]) -> tuple[str, Any]:
     """
     Level 1 Parser: Handles addition and subtraction (left-associative).
 
@@ -126,14 +130,14 @@ def parse_expression(tokens: List[Tuple[str, Any]], pos: List[int]) -> Tuple[str
         Tuple[str, Any]: The parsed node.
     """
     node = parse_term(tokens, pos)
-    while _peek(tokens, pos)[0] == 'OP' and _peek(tokens, pos)[1] in ('+', '-'):
+    while _peek(tokens, pos)[0] == "OP" and _peek(tokens, pos)[1] in ("+", "-"):
         op = _advance(tokens, pos)[1]
         right = parse_term(tokens, pos)
-        node = ('binop', op, node, right)
+        node = ("binop", op, node, right)
     return node
 
 
-def parse_term(tokens: List[Tuple[str, Any]], pos: List[int]) -> Tuple[str, Any]:
+def parse_term(tokens: list[tuple[str, Any]], pos: list[int]) -> tuple[str, Any]:
     """
     Level 2 Parser: Handles multiplication, division, modulo, and implicit multiplication (left-associative).
 
@@ -147,19 +151,21 @@ def parse_term(tokens: List[Tuple[str, Any]], pos: List[int]) -> Tuple[str, Any]
     node, was_paren = parse_factor(tokens, pos)
     while True:
         tok = _peek(tokens, pos)
-        if tok[0] == 'OP' and tok[1] in ('*', '/', '%'):
+        if tok[0] == "OP" and tok[1] in ("*", "/", "%"):
             op = _advance(tokens, pos)[1]
             right, was_paren = parse_factor(tokens, pos)
-            node = ('binop', op, node, right)
-        elif tok[0] == 'LPAREN' or (was_paren and tok[0] == 'NUM'):
+            node = ("binop", op, node, right)
+        elif tok[0] == "LPAREN" or (was_paren and tok[0] == "NUM"):
             right, was_paren = parse_factor(tokens, pos)
-            node = ('binop', '*', node, right)
+            node = ("binop", "*", node, right)
         else:
             break
     return node
 
 
-def parse_factor(tokens: List[Tuple[str, Any]], pos: List[int]) -> Tuple[Tuple[str, Any], bool]:
+def parse_factor(
+    tokens: list[tuple[str, Any]], pos: list[int]
+) -> tuple[tuple[str, Any], bool]:
     """
     Level 3 Parser: Handles prefix unary minus. Rejects unary plus.
 
@@ -174,16 +180,18 @@ def parse_factor(tokens: List[Tuple[str, Any]], pos: List[int]) -> Tuple[Tuple[s
         ValueError: If a unary '+' is encountered.
     """
     tok = _peek(tokens, pos)
-    if tok[0] == 'OP' and tok[1] == '-':
+    if tok[0] == "OP" and tok[1] == "-":
         _advance(tokens, pos)
         operand, _ = parse_factor(tokens, pos)
-        return ('neg', operand), False
-    if tok[0] == 'OP' and tok[1] == '+':
+        return ("neg", operand), False
+    if tok[0] == "OP" and tok[1] == "+":
         raise ValueError("Unary '+' is not supported")
     return parse_power(tokens, pos)
 
 
-def parse_power(tokens: List[Tuple[str, Any]], pos: List[int]) -> Tuple[Tuple[str, Any], bool]:
+def parse_power(
+    tokens: list[tuple[str, Any]], pos: list[int]
+) -> tuple[tuple[str, Any], bool]:
     """
     Level 4 Parser: Handles exponentiation (right-associative, binds tighter than unary minus).
 
@@ -196,14 +204,16 @@ def parse_power(tokens: List[Tuple[str, Any]], pos: List[int]) -> Tuple[Tuple[st
     """
     left, was_paren = parse_atom(tokens, pos)
     tok = _peek(tokens, pos)
-    if tok[0] == 'OP' and tok[1] == '^':
+    if tok[0] == "OP" and tok[1] == "^":
         _advance(tokens, pos)
         right, _ = parse_factor(tokens, pos)
-        return ('binop', '^', left, right), False
+        return ("binop", "^", left, right), False
     return left, was_paren
 
 
-def parse_atom(tokens: List[Tuple[str, Any]], pos: List[int]) -> Tuple[Tuple[str, Any], bool]:
+def parse_atom(
+    tokens: list[tuple[str, Any]], pos: list[int]
+) -> tuple[tuple[str, Any], bool]:
     """
     Base Level Parser: Extracts numeric literals and handles parenthesized sub-expressions.
 
@@ -218,14 +228,14 @@ def parse_atom(tokens: List[Tuple[str, Any]], pos: List[int]) -> Tuple[Tuple[str
         ValueError: On mismatched parentheses or unexpected tokens.
     """
     tok = _peek(tokens, pos)
-    if tok[0] == 'NUM':
+    if tok[0] == "NUM":
         _advance(tokens, pos)
-        return ('num', float(tok[1])), False
-    if tok[0] == 'LPAREN':
+        return ("num", float(tok[1])), False
+    if tok[0] == "LPAREN":
         _advance(tokens, pos)
         node = parse_expression(tokens, pos)
         closing = _peek(tokens, pos)
-        if closing[0] != 'RPAREN':
+        if closing[0] != "RPAREN":
             raise ValueError("Expected closing ')'")
         _advance(tokens, pos)
         return node, True
@@ -239,7 +249,7 @@ def format_number(value: float) -> str:
     return str(round(value, 4))
 
 
-def tree_to_string(node: Tuple[str, Any]) -> str:
+def tree_to_string(node: tuple[str, Any]) -> str:
     """
     Recursively renders an AST tuple into the required parenthesized prefix string.
 
@@ -253,17 +263,17 @@ def tree_to_string(node: Tuple[str, Any]) -> str:
         ValueError: If an unknown AST node type is encountered.
     """
     kind = node[0]
-    if kind == 'num':
+    if kind == "num":
         return format_number(node[1])
-    if kind == 'neg':
+    if kind == "neg":
         return f"(neg {tree_to_string(node[1])})"
-    if kind == 'binop':
+    if kind == "binop":
         _, op, left, right = node
         return f"({op} {tree_to_string(left)} {tree_to_string(right)})"
     raise ValueError(f"Unknown AST node type: {kind!r}")
 
 
-def evaluate_ast(node: Tuple[str, Any]) -> float:
+def evaluate_ast(node: tuple[str, Any]) -> float:
     """
     Recursively evaluates an AST to compute the final mathematical result.
 
@@ -277,32 +287,32 @@ def evaluate_ast(node: Tuple[str, Any]) -> float:
         ValueError: If division by zero, modulo by zero, or math overflow occurs.
     """
     kind = node[0]
-    if kind == 'num':
+    if kind == "num":
         return node[1]
-    if kind == 'neg':
+    if kind == "neg":
         return -evaluate_ast(node[1])
-    if kind == 'binop':
+    if kind == "binop":
         op = node[1]
         left = evaluate_ast(node[2])
         right = evaluate_ast(node[3])
 
-        if op == '+':
+        if op == "+":
             return left + right
-        if op == '-':
+        if op == "-":
             return left - right
-        if op == '*':
+        if op == "*":
             return left * right
-        if op == '/':
+        if op == "/":
             if right == 0:
                 raise ValueError("Division by zero")
             return left / right
-        if op == '%':
+        if op == "%":
             if right == 0:
                 raise ValueError("Modulo by zero")
             return left % right
-        if op == '^':
+        if op == "^":
             try:
-                result = left ** right
+                result = left**right
             except ZeroDivisionError as exc:
                 raise ValueError("Division by zero") from exc
             if isinstance(result, complex):
@@ -312,7 +322,7 @@ def evaluate_ast(node: Tuple[str, Any]) -> float:
     raise ValueError(f"Unknown AST node type: {kind!r}")
 
 
-def evaluate_file(input_path: str) -> List[Dict[str, Any]]:
+def evaluate_file(input_path: str) -> list[dict[str, Any]]:
     """
     Reads mathematical expressions from a text file, parses, evaluates, and writes blocks to 'output.txt'.
 
@@ -325,32 +335,32 @@ def evaluate_file(input_path: str) -> List[Dict[str, Any]]:
     if not os.path.exists(input_path):
         return []
 
-    with open(input_path, 'r', encoding='utf-8') as f:
+    with open(input_path, "r", encoding="utf-8") as f:
         expressions = [line.strip() for line in f if line.strip()]
 
-    results: List[Dict[str, Any]] = []
-    output_blocks: List[str] = []
+    results: list[dict[str, Any]] = []
+    output_blocks: list[str] = []
 
     for expr in expressions:
-        entry: Dict[str, Any] = {
-            'input': expr,
-            'tree': 'ERROR',
-            'tokens': 'ERROR',
-            'result': 'ERROR',
+        entry: dict[str, Any] = {
+            "input": expr,
+            "tree": "ERROR",
+            "tokens": "ERROR",
+            "result": "ERROR",
         }
 
         try:
             tokens = tokenize(expr)
-            entry['tokens'] = tokens_to_string(tokens)
+            entry["tokens"] = tokens_to_string(tokens)
             try:
                 parsed = parse(tokens)
-                entry['tree'] = tree_to_string(parsed)
+                entry["tree"] = tree_to_string(parsed)
                 try:
                     value = evaluate_ast(parsed)
                     if isinstance(value, float) and value.is_integer():
-                        entry['result'] = int(value)
+                        entry["result"] = int(value)
                     else:
-                        entry['result'] = round(float(value), 4)
+                        entry["result"] = round(float(value), 4)
                 except ValueError:
                     pass
             except ValueError:
@@ -366,8 +376,8 @@ def evaluate_file(input_path: str) -> List[Dict[str, Any]]:
             f"Result\n{entry['result']}\n"
         )
 
-    out_path = os.path.join(os.path.dirname(input_path) or '.', 'output.txt')
-    with open(out_path, 'w', encoding='utf-8') as out_file:
-        out_file.write('\n\n'.join(output_blocks))
+    out_path = os.path.join(os.path.dirname(input_path) or ".", "output.txt")
+    with open(out_path, "w", encoding="utf-8") as out_file:
+        out_file.write("\n\n".join(output_blocks))
 
     return results

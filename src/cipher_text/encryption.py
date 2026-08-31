@@ -1,9 +1,14 @@
 """
 HIT137 - Software Now - Assessment 2 - Sydney Group 5
 Question 1 - Encryption module (Task 1: Hemanta Adhikari(s403355) & John Karki (s403518))
- 
+
 Encrypts text using the assignment's custom substitution cipher.
 """
+
+
+class CipherWriteError(OSError):
+    """Raised when the encrypted output file cannot be written."""
+
 
 def shift_character_in_range(char, shift, start, end):
     """
@@ -11,90 +16,52 @@ def shift_character_in_range(char, shift, start, end):
     The shift is reversible because each range wraps independently.
     """
     range_size = ord(end) - ord(start) + 1
-    return chr(
-        (ord(char) - ord(start) + shift) % range_size
-        + ord(start)
-    )
+    return chr((ord(char) - ord(start) + shift) % range_size + ord(start))
+
 
 def encrypt_character(char, shift1, shift2):
     """
     Encrypt one character according to the cipher rules.
     """
-    if 'a' <= char <= 'n':
-        return shift_character_in_range(
-            char,
-            shift1 * shift2,
-            'a',
-            'n'
-        )
-    elif 'o' <= char <= 'z':
-        return shift_character_in_range(
-            char,
-            -(shift1 + shift2),
-            'o',
-            'z'
-        )
-    elif 'A' <= char <= 'M':
-        return shift_character_in_range(
-            char,
-            -shift1,
-            'A',
-            'M'
-        )
-    elif 'N' <= char <= 'Z':
-        return shift_character_in_range(
-            char,
-            shift2 * shift2,
-            'N',
-            'Z'
-        )
-    elif '0' <= char <= '9':
-        return shift_character_in_range(
-            char,
-            shift1 - shift2,
-            '0',
-            '9'
-        )
+    if "a" <= char <= "n":
+        return shift_character_in_range(char, shift1 * shift2, "a", "n")
+    elif "o" <= char <= "z":
+        return shift_character_in_range(char, -(shift1 + shift2), "o", "z")
+    elif "A" <= char <= "M":
+        return shift_character_in_range(char, -shift1, "A", "M")
+    elif "N" <= char <= "Z":
+        return shift_character_in_range(char, shift2 * shift2, "N", "Z")
+    elif "0" <= char <= "9":
+        return shift_character_in_range(char, shift1 - shift2, "0", "9")
     else:
         return char
 
+
 def encrypt_file(shift1, shift2, input_path, output_path):
     """
-    Once the contents of input_path have been encrypted, save the result to output_path.    
+    Once the contents of input_path have been encrypted, save the result to output_path.
     """
     if shift1 < 0 or shift2 < 0:
         raise ValueError("Shifts 1 and 2 cannot be negative.")
     try:
-        with open(input_path, 'r', encoding='utf-8') as input_file:
+        with open(input_path, "r", encoding="utf-8") as input_file:
             text = input_file.read()
     except FileNotFoundError:
-        raise FileNotFoundError(
-            "Could not find the file: " + input_path
-        )
+        raise FileNotFoundError("Could not find the file: " + input_path)
     if text.strip() == "":
-        raise ValueError(
-            "The file " + input_path + " is empty."
-        )
+        raise ValueError("The file " + input_path + " is empty.")
     encrypted_text = ""
     for char in text:
-        encrypted_text += encrypt_character(
-            char,
-            shift1,
-            shift2
-        )
+        encrypted_text += encrypt_character(char, shift1, shift2)
     try:
-        with open(output_path, 'w', encoding='utf-8') as output_file:
+        with open(output_path, "w", encoding="utf-8") as output_file:
             output_file.write(encrypted_text)
-    except Exception as error:
-        raise Exception(
-            "Could not write to "
-            + output_path
-            + ": "
-            + str(error)
-        )
+    except OSError as error:
+        raise CipherWriteError(f"Could not write to {output_path}: {error}") from error
+
 
 if __name__ == "__main__":
-    RAW_FILE       = "text_files/raw_text.txt"
+    RAW_FILE = "text_files/raw_text.txt"
     ENCRYPTED_FILE = "text_files/encrypted_text.txt"
 
     def ask_for_shift(message):
