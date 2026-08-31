@@ -27,8 +27,8 @@ jobs:
 
       - name: Lint and Format (Ruff)
         run: |
-          ruff check .
-          ruff format --check .
+          ruff check src/ tests/
+          ruff format --check src/ tests/
 
       - name: Type Checking (Mypy)
         # mypy ensures our typed function signatures (e.g., input_path: str) are respected
