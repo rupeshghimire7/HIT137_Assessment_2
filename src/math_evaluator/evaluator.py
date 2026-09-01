@@ -5,7 +5,7 @@ from typing import Any
 
 BASE_DIR = Path(__file__).resolve().parent
 TEXT_FILES_DIR = BASE_DIR / "text_files"
-DEFAULT_INPUT_PATH = TEXT_FILES_DIR / "sample_input.txt"
+DEFAULT_INPUT_PATH = TEXT_FILES_DIR / "input.txt"
 
 # For lint, specifying OSError type
 class EvaluationOutputError(OSError):
