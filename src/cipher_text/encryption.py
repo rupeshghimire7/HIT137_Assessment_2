@@ -56,8 +56,19 @@ def encrypt_file(shift1, shift2, input_path, output_path):
 
 
 if __name__ == "__main__":
-    RAW_FILE = "text_files/raw_text.txt"
-    ENCRYPTED_FILE = "text_files/encrypted_text.txt"
+
+    from pathlib import Path
+
+    BASE_DIR = Path(__file__).resolve().parent
+
+    try:
+        TEXT_DIR = BASE_DIR / "text_files"
+    except:
+        TEXT_DIR = Path("text_files")
+
+    RAW_FILE = str(TEXT_DIR / "raw_text.txt")
+    ENCRYPTED_FILE = str(TEXT_DIR / "encrypted_text.txt")
+    DECRYPTED_FILE = str(TEXT_DIR / "decrypted_text.txt")
 
     def ask_for_shift(message):
         while True:

@@ -2,12 +2,22 @@
 
 from pathlib import Path
 
-from decryption import decrypt_file
-from encryption import encrypt_file
-from verify import verify_files
-
 BASE_DIR = Path(__file__).resolve().parent
-TEXT_DIR = BASE_DIR / "text_files"
+
+try:
+    from .decryption import decrypt_file
+    from .encryption import encrypt_file
+    from .verify import verify_files
+
+    TEXT_DIR = Path("text_files")
+
+except ImportError:
+    from decryption import decrypt_file
+    from encryption import encrypt_file
+    from verify import verify_files
+
+    TEXT_DIR = BASE_DIR / "text_files"
+
 RAW_FILE = str(TEXT_DIR / "raw_text.txt")
 ENCRYPTED_FILE = str(TEXT_DIR / "encrypted_text.txt")
 DECRYPTED_FILE = str(TEXT_DIR / "decrypted_text.txt")
