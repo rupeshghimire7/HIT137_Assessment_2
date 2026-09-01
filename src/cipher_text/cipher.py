@@ -1,35 +1,36 @@
-"""
-HIT137 - Software Now - Assessment 2
-Sydney Group 5
+"""Cipher program: encrypts/decrypts text files using shift keys."""
 
-Question 1: File Encryption / Decryption Cipher
+from pathlib import Path
 
-This program reads raw_text.txt, encrypts it using a custom substitution
-cipher driven by two user-supplied non-negative integer keys (shift1,
-shift2), decrypts the result back, and verifies that the decrypted text
-matches the original.
+from decryption import decrypt_file
+from encryption import encrypt_file
+from verify import verify_files
 
-MEMBERS (Task 1):
-HEMANTA ADHIKARI - s403355
-JOHN KARKI - (s403518)
-
-NOTE: Run with `python cipher.py` from this directory. You will be
-prompted for shift1 and shift2, and the program will automatically
-encrypt raw_text.txt, decrypt the result, and verify the round trip.
-"""
-
-from .decryption import decrypt_file
-from .encryption import encrypt_file
-from .verify import verify_files
-
-RAW_FILE = "text_files/raw_text.txt"
-ENCRYPTED_FILE = "text_files/encrypted_text.txt"
-DECRYPTED_FILE = "text_files/decrypted_text.txt"
+BASE_DIR = Path(__file__).resolve().parent
+TEXT_DIR = BASE_DIR / "text_files"
+RAW_FILE = str(TEXT_DIR / "raw_text.txt")
+ENCRYPTED_FILE = str(TEXT_DIR / "encrypted_text.txt")
+DECRYPTED_FILE = str(TEXT_DIR / "decrypted_text.txt")
 
 
-def ask_for_shift(message):
+def ask_for_shift(message: str) -> int:
+    """
+    Prompt user for a non-negative integer shift value.
+
+    Args:
+        message: Prompt text to display.
+
+    Returns:
+        Non-negative integer entered by user.
+
+    Raises:
+        EOFError: If input stream is closed (testing scenario).
+    """
     while True:
-        user_input = input(message)
+        try:
+            user_input = input(message)
+        except EOFError as e:
+            raise EOFError("Input stream closed") from e
 
         try:
             number = int(user_input)
@@ -44,37 +45,42 @@ def ask_for_shift(message):
         return number
 
 
-def main():
+def main() -> None:
+    """
+    Main workflow: encrypt raw_text.txt, decrypt it, verify result.
+
+    Prompts user for shift1 and shift2, runs full encrypt-decrypt-verify pipeline.
+    Exits early on file or validation errors.
+    """
     print("HIT137 Assessment 2 - Question 1")
     print("Encrypt and decrypt text using keys.")
     print()
 
-    shift1 = ask_for_shift("Enter shift1 (non-negative integer): ")
-
-    shift2 = ask_for_shift("Enter shift2 (non-negative integer): ")
-
-    print()
-    print("Step 1: Encrypting", RAW_FILE, "...")
-
     try:
-        encrypt_file(shift1, shift2, RAW_FILE, ENCRYPTED_FILE)
-
-        print("Done. Encrypted file saved as", ENCRYPTED_FILE)
-
-    except (FileNotFoundError, ValueError) as error:
-        print("Encryption failed:", error)
+        shift1 = ask_for_shift("Enter shift1 (non-negative integer): ")
+        shift2 = ask_for_shift("Enter shift2 (non-negative integer): ")
+    except EOFError:
         return
 
     print()
-    print("Step 2: Decrypting", ENCRYPTED_FILE, "...")
+    print(f"Step 1: Encrypting {RAW_FILE} ...")
+
+    try:
+        TEXT_DIR.mkdir(parents=True, exist_ok=True)
+        encrypt_file(shift1, shift2, RAW_FILE, ENCRYPTED_FILE)
+        print(f"Done. Encrypted file saved as {ENCRYPTED_FILE}")
+    except (FileNotFoundError, ValueError) as error:
+        print(f"Encryption failed: {error}")
+        return
+
+    print()
+    print(f"Step 2: Decrypting {ENCRYPTED_FILE} ...")
 
     try:
         decrypt_file(shift1, shift2, ENCRYPTED_FILE, DECRYPTED_FILE)
-
-        print("Done. Decrypted file saved as", DECRYPTED_FILE)
-
+        print(f"Done. Decrypted file saved as {DECRYPTED_FILE}")
     except (FileNotFoundError, ValueError) as error:
-        print("Decryption failed:", error)
+        print(f"Decryption failed: {error}")
         return
 
     print()
@@ -82,9 +88,8 @@ def main():
 
     try:
         verify_files(RAW_FILE, DECRYPTED_FILE)
-
     except FileNotFoundError as error:
-        print("Verification failed:", error)
+        print(f"Verification failed: {error}")
         return
 
 

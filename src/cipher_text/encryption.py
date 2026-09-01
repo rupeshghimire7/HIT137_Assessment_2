@@ -1,9 +1,4 @@
-"""
-HIT137 - Software Now - Assessment 2 - Sydney Group 5
-Question 1 - Encryption module (Task 1: Hemanta Adhikari(s403355) & John Karki (s403518))
-
-Encrypts text using the assignment's custom substitution cipher.
-"""
+"""Encryption module: substitution cipher using shift1 and shift2 keys.""" 
 
 
 class CipherWriteError(OSError):

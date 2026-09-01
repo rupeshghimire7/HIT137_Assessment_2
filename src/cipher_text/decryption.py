@@ -1,9 +1,4 @@
-"""
-HIT137 - Software Now - Assessment 2 - Sydney Group 5
-Question 1 - Decryption module (Task 1: Hemanta Adhikari(s403355) & John Karki (s403518))
-
-Reverses the cipher applied by encryption.py.
-"""
+"""Decryption module: reverses two-key substitution cipher."""
 
 
 class CipherWriteError(OSError):

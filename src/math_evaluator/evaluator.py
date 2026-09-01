@@ -1,7 +1,13 @@
 import os
+import sys
+from pathlib import Path
 from typing import Any
 
+BASE_DIR = Path(__file__).resolve().parent
+TEXT_FILES_DIR = BASE_DIR / "text_files"
+DEFAULT_INPUT_PATH = TEXT_FILES_DIR / "sample_input.txt"
 
+# For lint, specifying OSError type
 class EvaluationOutputError(OSError):
     """Raised when the evaluator cannot write the output file."""
 
@@ -332,10 +338,14 @@ def evaluate_file(input_path: str) -> list[dict[str, Any]]:
     Returns:
         List[Dict[str, Any]]: A list of dictionaries representing the evaluation of each expression.
     """
-    if not os.path.exists(input_path):
+    input_path_obj = Path(input_path).expanduser()
+    if not input_path_obj.is_absolute():
+        input_path_obj = (Path.cwd() / input_path_obj).resolve()
+
+    if not input_path_obj.exists():
         return []
 
-    with open(input_path, "r", encoding="utf-8") as f:
+    with open(input_path_obj, "r", encoding="utf-8") as f:
         expressions = [line.strip() for line in f if line.strip()]
 
     results: list[dict[str, Any]] = []
@@ -370,14 +380,26 @@ def evaluate_file(input_path: str) -> list[dict[str, Any]]:
 
         results.append(entry)
         output_blocks.append(
-            f"Input\n{entry['input']}\n"
-            f"Tree\n{entry['tree']}\n"
-            f"Tokens\n{entry['tokens']}\n"
-            f"Result\n{entry['result']}\n"
+            f"Input: {entry['input']}\n"
+            f"Tree: {entry['tree']}\n"
+            f"Tokens: {entry['tokens']}\n"
+            f"Result: {entry['result']}\n"
         )
 
-    out_path = os.path.join(os.path.dirname(input_path) or ".", "output.txt")
+    out_path = input_path_obj.parent / "output.txt"
     with open(out_path, "w", encoding="utf-8") as out_file:
         out_file.write("\n\n".join(output_blocks))
 
     return results
+
+
+def main(argv: list[str] | None = None) -> None:
+    """Run the evaluator against the bundled sample input unless a file path is given."""
+    args = sys.argv[1:] if argv is None else argv
+    input_path = args[0] if args else str(DEFAULT_INPUT_PATH)
+    results = evaluate_file(input_path)
+    print(f"Processed {len(results)} expression(s) from {input_path}")
+
+
+if __name__ == "__main__":
+    main()

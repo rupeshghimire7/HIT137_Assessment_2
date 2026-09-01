@@ -1,3 +1,8 @@
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+
+
 def verify_files(original_path, decrypted_path):
     try:
         with open(original_path, "r", encoding="utf-8") as original_file:
@@ -22,8 +27,8 @@ def verify_files(original_path, decrypted_path):
 
 
 if __name__ == "__main__":
-    RAW_FILE = "text_files/raw_text.txt"
-    DECRYPTED_FILE = "text_files/decrypted_text.txt"
+    RAW_FILE = str(BASE_DIR / "text_files" / "raw_text.txt")
+    DECRYPTED_FILE = str(BASE_DIR / "text_files" / "decrypted_text.txt")
 
     print("Step 3: Checking that decryption worked correctly...")
 
