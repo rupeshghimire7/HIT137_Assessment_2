@@ -1,9 +1,4 @@
-"""
-HIT137 - Software Now - Assessment 2 - Sydney Group 5
-Question 1 - Encryption module (Task 1: Hemanta Adhikari(s403355) & John Karki (s403518))
-
-Encrypts text using the assignment's custom substitution cipher.
-"""
+"""Encryption module: substitution cipher using shift1 and shift2 keys.""" 
 
 
 class CipherWriteError(OSError):
@@ -61,8 +56,19 @@ def encrypt_file(shift1, shift2, input_path, output_path):
 
 
 if __name__ == "__main__":
-    RAW_FILE = "text_files/raw_text.txt"
-    ENCRYPTED_FILE = "text_files/encrypted_text.txt"
+
+    from pathlib import Path
+
+    BASE_DIR = Path(__file__).resolve().parent
+
+    try:
+        TEXT_DIR = BASE_DIR / "text_files"
+    except:
+        TEXT_DIR = Path("text_files")
+
+    RAW_FILE = str(TEXT_DIR / "raw_text.txt")
+    ENCRYPTED_FILE = str(TEXT_DIR / "encrypted_text.txt")
+    DECRYPTED_FILE = str(TEXT_DIR / "decrypted_text.txt")
 
     def ask_for_shift(message):
         while True:

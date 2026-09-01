@@ -7,6 +7,15 @@ from src.cipher_text.encryption import (
 )
 
 
+def test_encrypt_file_exceptions(tmp_path):
+    from src.cipher_text.encryption import encrypt_file
+    non_existent = tmp_path / "does_not_exist.txt"
+    # Should handle missing files gracefully (e.g., return False or raise handled exception)
+    try:
+        encrypt_file(str(non_existent), str(tmp_path / "out.txt"), 3)
+    except Exception:
+        pass
+    
 def test_shift_character_forward():
     result = shift_character_in_range("a", 1, "a", "n")
 

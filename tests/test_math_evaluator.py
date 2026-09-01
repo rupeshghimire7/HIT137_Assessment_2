@@ -158,9 +158,9 @@ def test_evaluate_file_full_pipeline(tmp_path):
     output_file = tmp_path / "output.txt"
     assert output_file.exists()
     content = output_file.read_text(encoding="utf-8")
-    assert "Input\n3 + 5" in content
-    assert "Result\n8" in content
-    assert "Tree\nERROR" in content  # Appears in the @ block
+    assert "Input: 3 + 5" in content
+    assert "Result: 8" in content
+    assert "Tree: ERROR" in content  # Appears in the @ block
 
 
 def test_evaluate_file_handles_missing_file():

@@ -1,14 +1,36 @@
 # HIT137 Assessment 2 – Sydney Group 5
 
-This is our group submission for HIT137 Software Now, Assessment 2. The repo has all our source code, tests, and output files for each question.
+This is our group submission for **HIT137 Software Now, Assessment 2**. The project contains the source code, tests, input/output text files, and documentation for both assignment questions.
 
-**Question 1 – Cipher:** Hemanta Adhikari (s403355) & John Karki (s403518)
+## Group Members
 
-## Folder structure
+| Member Name      | Student ID |
+| ---------------- | ---------- |
+| Ashim Koirala    | S407089    |
+| Hemanta Adhikari | S403355    |
+| John Karki       | S403518    |
+| Rupesh Ghimire   | S403354    |
 
-```
+## Project / Task Overview
+
+### Question 1 – Cipher
+
+Write a program in `cipher.py` that reads `raw_text.txt`, encrypts its contents using the required two-key substitution scheme, writes the encrypted result to `encrypted_text.txt`, then decrypts it and verifies that the decrypted text matches the original.
+
+The encryption uses two non-negative integer inputs, `shift1` and `shift2`. Lowercase letters, uppercase letters, digits, and other characters are handled according to the assignment rules. The complete encrypt → decrypt → verify workflow is available through `cipher.py`.
+
+### Question 2 – Mathematical Expression Evaluator
+
+Write a program in `evaluator.py` that reads mathematical expressions from an input text file, one expression per line, evaluates them using recursive-descent parsing, and writes the required tree, tokens, and result information to `output.txt`.
+
+The evaluator handles `+`, `-`, `*`, `/`, `%`, exponentiation `^`, parentheses, unary negation, and the required implicit multiplication rules. It uses plain functions and separate parser functions for the precedence levels, as required by the assignment.
+
+## Folder Structure
+
+```text
 .
 ├── docs
+│   ├── HIT137_assignment2.md
 │   ├── HIT137 Assignment 2 S2 2026.pdf
 │   ├── raw_text.txt
 │   ├── sample_input.txt
@@ -17,30 +39,35 @@ This is our group submission for HIT137 Software Now, Assessment 2. The repo has
 ├── README.md
 ├── requirements.txt
 ├── src
-│   └── cipher_text
-│       ├── cipher.py               # main program: prompts for shift1/shift2, runs the pipeline
-│       ├── encryption.py           # encrypt_character, encrypt_file
-│       ├── decryption.py           # decrypt_character, decrypt_file
-│       ├── verify.py               # verify_files
+│   ├── cipher_text
+│   │   ├── __init__.py
+│   │   ├── decryption.py
+│   │   ├── cipher.py
+│   │   ├── encryption.py
+│   │   ├── text_files
+│   │   │   ├── raw_text.txt
+│   │   │   ├── encrypted_text.txt
+│   │   │   └── decrypted_text.txt
+│   │   └── verify.py
+│   └── math_evaluator
+│       ├── evaluator.py
+│       ├── __init__.py
 │       └── text_files
-│           ├── raw_text.txt        # input text
-│           ├── encrypted_text.txt  # output after encryption
-│           └── decrypted_text.txt  # output after decryption
-└── tests                           # outside src — run from project root
+│           ├── sample_input.txt
+│           ├── sample_output.txt
+│           └── output.txt
+└── tests
     ├── conftest.py
     ├── test_cipher.py
-    ├── test_encryption.py
     ├── test_decryption.py
+    ├── test_encryption.py
+    ├── test_math_evaluator.py
     └── test_verify.py
 ```
 
 ## Question 1 – Cipher
 
-Hemanta wrote the encryption side and John wrote the decryption and verification. Together they form a custom substitution cipher that takes two numbers — `shift1` and `shift2` — and uses them to scramble text, then reverse it back.
-
-### How the cipher works
-
-Each character in the file gets shifted by a different amount depending on what it is:
+### Cipher Rules
 
 | Character | What happens |
 |---|---|
@@ -49,140 +76,172 @@ Each character in the file gets shifted by a different amount depending on what 
 | Uppercase `A`–`M` | shifted backward by `shift1` |
 | Uppercase `N`–`Z` | shifted forward by `shift2²` |
 | Digits `0`–`9` | shifted forward by `shift1 − shift2` |
-| Spaces, punctuation, everything else | left as-is |
+| Spaces, tabs, newlines, punctuation, symbols | left unchanged |
 
-Each range wraps around on itself, so no character ever escapes its group and the whole thing can be reversed exactly.
+Each character range wraps around within its own range.
 
-### How to run
+### Input / Output File Handling
 
-All commands below are run from inside `src/cipher_text/`.
+The programs use the expected text-file paths when those files exist.
 
-> ⚠️ **shift1 and shift2 must be the same when you encrypt and decrypt.** If you use different numbers, the decryption will come out wrong and verification will fail.
+If the expected bundled input file is missing, a small built-in fallback input is stored in the corresponding Python file. The program uses that fallback, prints a message in the terminal, and creates the missing input file so the program can still be demonstrated.
 
-**To test encryption only (Hemanta's part):**
-```bash
-python encryption.py
-```
-Enter your shift values and it will encrypt `text_files/raw_text.txt` into `text_files/encrypted_text.txt`.
+Output directories are created automatically when needed. Generated output is written to the expected output file and the generated content is also displayed in the terminal.
 
-**To test decryption only (John's part):**
-```bash
-python decryption.py
-```
-Enter the same shift values used during encryption and it will decrypt `text_files/encrypted_text.txt` into `text_files/decrypted_text.txt`.
+This fallback behaviour is limited to the program's expected bundled paths. Tests that deliberately pass an unrelated missing path still exercise the normal missing-file error behaviour.
 
-**To test verification only (Hemanta's part):**
-```bash
-python verify.py
-```
-Compares `text_files/raw_text.txt` with `text_files/decrypted_text.txt` and tells you if they match. You need to have run both encryption and decryption first with the same shift values.
+### How to Run
 
-**To run the whole pipeline at once:**
-```bash
-python cipher.py
-```
-Enter shift values once and it automatically encrypts, decrypts, and verifies in one go.
-
-### What each file does
-
-- `encryption.py` — written by Hemanta. Has `shift_character_in_range`, `encrypt_character`, and `encrypt_file`.
-- `decryption.py` — written by John. Has `shift_character_in_range`, `decrypt_character`, and `decrypt_file`.
-- `verify.py` — written by Hemanta. Has `verify_files` which compares the original and decrypted files.
-- `cipher.py` — ties everything together. Has `ask_for_shift` and `main`.
-
-### Tests
-
-The tests are in the `tests/` folder at the project root, not inside `src/`. To run them, go to the project root first:
+From the project root:
 
 ```bash
-cd ~/HIT137-Assessment-2
-pytest tests/
+cd HIT137-Assessment-2
 ```
 
-or with verbose output:
+The complete Question 1 workflow can be run with:
 
 ```bash
-python -m pytest -v tests/
+python3 src/cipher_text/cipher.py
 ```
 
-`conftest.py` handles adding `src/cipher_text` to the Python path so the imports work correctly from outside that folder.
+Enter the same `shift1` and `shift2` values for encryption and decryption.
 
-### Test results
+Run encryption only:
 
-```
-$ pytest tests/
-================================================================================ test session starts ================================================================================
-platform linux -- Python 3.13.5, pytest-8.3.4, pluggy-1.5.0
-rootdir: /HIT137-Assessment-2
-plugins: anyio-4.7.0
-collected 43 items
-
-tests/test_cipher.py ........                                                                                                                                                 [ 18%]
-tests/test_decryption.py ...............                                                                                                                                      [ 53%]
-tests/test_encryption.py ...............                                                                                                                                      [ 88%]
-tests/test_verify.py .....                                                                                                                                                    [100%]
-
-================================================================================ 43 passed in 0.15s ================================================================================
+```bash
+python3 src/cipher_text/encryption.py
 ```
 
-```
-$ python -m pytest -v tests/
-================================================================================ test session starts ================================================================================
-platform linux -- Python 3.13.5, pytest-8.3.4, pluggy-1.5.0 -- /home/hemanta/anaconda3/bin/python
-cachedir: .pytest_cache
-rootdir: /HIT137-Assessment-2
-plugins: anyio-4.7.0
-collected 43 items
+Run decryption only:
 
-tests/test_cipher.py::test_ask_for_shift_accepts_valid_number PASSED                                                                                                          [  2%]
-tests/test_cipher.py::test_ask_for_shift_accepts_zero PASSED                                                                                                                  [  4%]
-tests/test_cipher.py::test_ask_for_shift_rejects_text PASSED                                                                                                                  [  6%]
-tests/test_cipher.py::test_ask_for_shift_rejects_negative_number PASSED                                                                                                       [  9%]
-tests/test_cipher.py::test_ask_for_shift_rejects_decimal PASSED                                                                                                               [ 11%]
-tests/test_cipher.py::test_main_completes_encryption_and_decryption PASSED                                                                                                    [ 13%]
-tests/test_cipher.py::test_main_handles_missing_raw_file PASSED                                                                                                               [ 16%]
-tests/test_cipher.py::test_main_handles_empty_raw_file PASSED                                                                                                                 [ 18%]
-tests/test_decryption.py::test_shift_character_forward PASSED                                                                                                                 [ 20%]
-tests/test_decryption.py::test_shift_character_wraps_forward PASSED                                                                                                           [ 23%]
-tests/test_decryption.py::test_shift_character_backward PASSED                                                                                                                [ 25%]
-tests/test_decryption.py::test_decrypt_lowercase_character PASSED                                                                                                             [ 27%]
-tests/test_decryption.py::test_decrypt_lowercase_second_range PASSED                                                                                                          [ 30%]
-tests/test_decryption.py::test_decrypt_uppercase_first_range PASSED                                                                                                           [ 32%]
-tests/test_decryption.py::test_decrypt_uppercase_second_range PASSED                                                                                                          [ 34%]
-tests/test_decryption.py::test_decrypt_number PASSED                                                                                                                          [ 37%]
-tests/test_decryption.py::test_special_character_is_unchanged PASSED                                                                                                          [ 39%]
-tests/test_decryption.py::test_space_is_unchanged PASSED                                                                                                                      [ 41%]
-tests/test_decryption.py::test_decrypt_file PASSED                                                                                                                            [ 44%]
-tests/test_decryption.py::test_negative_shift1_is_rejected PASSED                                                                                                             [ 46%]
-tests/test_decryption.py::test_negative_shift2_is_rejected PASSED                                                                                                             [ 48%]
-tests/test_decryption.py::test_missing_input_file PASSED                                                                                                                      [ 51%]
-tests/test_decryption.py::test_empty_input_file PASSED                                                                                                                        [ 53%]
-tests/test_encryption.py::test_shift_character_forward PASSED                                                                                                                 [ 55%]
-tests/test_encryption.py::test_shift_character_wraps_forward PASSED                                                                                                           [ 58%]
-tests/test_encryption.py::test_shift_character_backward PASSED                                                                                                                [ 60%]
-tests/test_encryption.py::test_encrypt_lowercase_character PASSED                                                                                                             [ 62%]
-tests/test_encryption.py::test_encrypt_lowercase_second_range PASSED                                                                                                          [ 65%]
-tests/test_encryption.py::test_encrypt_uppercase_first_range PASSED                                                                                                           [ 67%]
-tests/test_encryption.py::test_encrypt_uppercase_second_range PASSED                                                                                                          [ 69%]
-tests/test_encryption.py::test_encrypt_number PASSED                                                                                                                          [ 72%]
-tests/test_encryption.py::test_special_character_is_unchanged PASSED                                                                                                          [ 74%]
-tests/test_encryption.py::test_space_is_unchanged PASSED                                                                                                                      [ 76%]
-tests/test_encryption.py::test_encrypt_file PASSED                                                                                                                            [ 79%]
-tests/test_encryption.py::test_negative_shift1_is_rejected PASSED                                                                                                             [ 81%]
-tests/test_encryption.py::test_negative_shift2_is_rejected PASSED                                                                                                             [ 83%]
-tests/test_encryption.py::test_missing_input_file PASSED                                                                                                                      [ 86%]
-tests/test_encryption.py::test_empty_input_file PASSED                                                                                                                        [ 88%]
-tests/test_verify.py::test_matching_files_return_true PASSED                                                                                                                  [ 90%]
-tests/test_verify.py::test_different_files_return_false PASSED                                                                                                                [ 93%]
-tests/test_verify.py::test_missing_original_file PASSED                                                                                                                       [ 95%]
-tests/test_verify.py::test_missing_decrypted_file PASSED                                                                                                                      [ 97%]
-tests/test_verify.py::test_two_empty_files_match PASSED                                                                                                                       [100%]
-
-================================================================================ 43 passed in 0.14s ================================================================================
+```bash
+python3 src/cipher_text/decryption.py
 ```
 
-The tests cover shifting and wrapping for every character range, the full encrypt-then-decrypt round trip, what happens when you pass negative shifts, missing files, empty files, and the full `main()` flow end to end.
+Run verification only:
 
-## Group contributions
+```bash
+python3 src/cipher_text/verify.py
+```
 
-Everything has been committed to GitHub as we went, as required by the assignment. The repo link is in `github_link.txt`.
+## Question 2 – Mathematical Evaluator
+
+### Supported Features
+
+The evaluator supports:
+
+- `+`, `-`, `*`, `/`, `%`
+- exponentiation `^`
+- nested parentheses
+- unary negation such as `-5`, `--5`, and `-(3 + 4)`
+- implicit multiplication where permitted by the assignment
+- errors for unsupported unary `+`
+- errors for invalid characters and invalid expressions
+- division-by-zero and modulo-by-zero errors
+- formatted results with whole numbers shown without `.0` and other results rounded to four decimal places
+
+The output contains four lines per expression:
+
+```text
+Input: ...
+Tree: ...
+Tokens: ...
+Result: ...
+```
+
+### How to Run
+
+Run the evaluator with its bundled sample input:
+
+```bash
+python3 src/math_evaluator/evaluator.py
+```
+
+Or provide another input file:
+
+```bash
+python3 src/math_evaluator/evaluator.py path/to/input.txt
+```
+
+The evaluator writes `output.txt` into the same directory as the input file. It also prints each generated four-line result block to the terminal.
+
+If the expected bundled sample input is missing, `evaluator.py` uses its built-in list of sample expressions, creates the missing input file, and continues.
+
+## Virtual Environment and Requirements
+
+### Linux
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip
+python3 -m pip install -r requirements.txt
+```
+
+### macOS
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip
+python3 -m pip install -r requirements.txt
+```
+
+### Windows PowerShell
+
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+If `python3` is available on Windows, the test commands below can also be used exactly as written. Otherwise, use `python -m pytest ...`.
+
+### Windows Command Prompt
+
+```cmd
+py -3 -m venv .venv
+.venv\Scripts\activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+## Tests
+
+Run each test file separately from the project root using `python3 -m pytest path`:
+
+```bash
+python3 -m pytest tests/test_cipher.py
+python3 -m pytest tests/test_decryption.py
+python3 -m pytest tests/test_encryption.py
+python3 -m pytest tests/test_math_evaluator.py
+python3 -m pytest tests/test_verify.py
+```
+
+Run all tests together:
+
+```bash
+python3 -m pytest tests
+```
+
+Run all tests with verbose output:
+
+```bash
+python3 -m pytest -v tests
+```
+
+The tests cover the cipher character transformations, wrapping, encryption/decryption round trips, invalid shifts, missing and empty files, evaluator tokenization, parsing, tree generation, calculation errors, output-file generation, and verification.
+
+## Main Files
+
+- `src/cipher_text/cipher.py` — runs the complete Question 1 pipeline.
+- `src/cipher_text/encryption.py` — implements encryption.
+- `src/cipher_text/decryption.py` — implements decryption.
+- `src/cipher_text/verify.py` — compares the original and decrypted files.
+- `src/math_evaluator/evaluator.py` — tokenizes, parses, evaluates, formats, and writes Question 2 results.
+- `tests/` — pytest test suite for both questions.
+- `docs/HIT137_assignment2.md` — assignment requirements supplied for this submission.
+- `github_link.txt` — location for the public GitHub repository link.
+
+
