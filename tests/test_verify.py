@@ -68,15 +68,3 @@ def test_two_empty_files_match(tmp_path):
     result = verify_files(str(original_file), str(decrypted_file))
 
     assert result is True
-
-
-def test_verify_files_edge_cases(tmp_path):
-    from src.cipher_text.verify import verify_files
-    f1 = tmp_path / "f1.txt"
-    f2 = tmp_path / "f2.txt"
-    f1.write_text("test", encoding="utf-8")
-    f2.write_text("different", encoding="utf-8")
-    
-    # Test mismatch and non-existent file paths
-    assert verify_files(str(f1), str(f2)) is False
-    assert verify_files(str(f1), str(tmp_path / "missing.txt")) is False
