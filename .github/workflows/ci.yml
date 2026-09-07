@@ -2,7 +2,7 @@ name: HIT137 Assessment2 CI
 
 on:
   push:
-    branches: [ "main", "rupesh" ]
+    branches: [ "main"]
   pull_request:
     branches: [ "main" ]
 

@@ -1,6 +1,6 @@
 # HIT137 Assessment 2 – Sydney Group 5
 
-This is our group submission for **HIT137 Software Now, Assessment 2**. The project contains the source code, tests, input/output text files, and documentation for both assignment questions.
+This project contains the source code, tests, and documentation for a two-part software now program: a custom two-key substitution cipher and a recursive-descent mathematical expression evaluator. 
 
 ## Group Members
 
@@ -11,237 +11,144 @@ This is our group submission for **HIT137 Software Now, Assessment 2**. The proj
 | John Karki       | S403518    |
 | Rupesh Ghimire   | S403354    |
 
-## Project / Task Overview
+## Project Architecture & Logic
 
-### Question 1 – Cipher
+### Task 1: Two-Key Substitution Cipher
 
-Write a program in `cipher.py` that reads `raw_text.txt`, encrypts its contents using the required two-key substitution scheme, writes the encrypted result to `encrypted_text.txt`, then decrypts it and verifies that the decrypted text matches the original.
+The `cipher_text` module implements a custom cryptographic pipeline that reads raw text, applies character transformations, and writes the encrypted output to a file. It also supports decrypting the ciphered text and verifying the integrity of the round-trip transformation against the original file.
 
-The encryption uses two non-negative integer inputs, `shift1` and `shift2`. Lowercase letters, uppercase letters, digits, and other characters are handled according to the assignment rules. The complete encrypt → decrypt → verify workflow is available through `cipher.py`.
+The core algorithm relies on two non-negative integer keys (`shift1` and `shift2`) and dynamically applies different wrapping and shifting rules based on character classification:
 
-### Question 2 – Mathematical Expression Evaluator
+* **Lowercase `a`–`n`**: Shifted forward by `shift1 × shift2`.
+* **Lowercase `o`–`z`**: Shifted backward by `shift1 + shift2`.
+* **Uppercase `A`–`M`**: Shifted backward by `shift1`.
+* **Uppercase `N`–`Z`**: Shifted forward by `shift2²`.
+* **Digits `0`–`9`**: Shifted forward by `shift1 − shift2`.
+* **Special Characters**: Spaces, tabs, newlines, and punctuation remain strictly unchanged.
 
-Write a program in `evaluator.py` that reads mathematical expressions from an input text file, one expression per line, evaluates them using recursive-descent parsing, and writes the required tree, tokens, and result information to `output.txt`.
+The main execution script (`cipher.py`) chains these operations, automatically handling missing files by creating fallback directories and sample text to ensure the pipeline runs seamlessly.
 
-The evaluator handles `+`, `-`, `*`, `/`, `%`, exponentiation `^`, parentheses, unary negation, and the required implicit multiplication rules. It uses plain functions and separate parser functions for the precedence levels, as required by the assignment.
+### Task 2: Mathematical Expression Evaluator
+
+The `math_evaluator` module is a text-parsing engine that processes string-based mathematical expressions and computes their results using a recursive-descent parser. 
+
+Built entirely with functional programming principles (no classes), the parser breaks down strings into manageable tokens and evaluates them based on strict mathematical precedence (from lowest to highest):
+1. Addition (`+`) and Subtraction (`-`)
+2. Multiplication (`*`), Division (`/`), Modulo (`%`), and Implicit Multiplication
+3. Unary Negation (e.g., `-5`)
+4. Exponentiation (`^`)
+
+The logic correctly processes nested parentheses and flags unsupported operations (like unary `+`) or syntax errors. For each parsed expression, the evaluator generates a structured four-line output block containing the original input, the abstract syntax tree (formatted functionally, e.g., `(+ 3 5)`), the token breakdown, and the final computed result (rounded to 4 decimal places, with whole numbers displayed as integers).
 
 ## Folder Structure
 
 ```text
 .
-├── docs
+├── docs # contains documentations of assignment
 │   ├── HIT137_assignment2.md
 │   ├── HIT137 Assignment 2 S2 2026.pdf
 │   ├── raw_text.txt
 │   ├── sample_input.txt
 │   └── sample_output.txt
-├── github_link.txt
+├── github_link.txt 
 ├── README.md
 ├── requirements.txt
 ├── src
-│   ├── cipher_text
-│   │   ├── __init__.py
-│   │   ├── decryption.py
+│   ├── cipher_text # codes and txt files for question 1
 │   │   ├── cipher.py
+│   │   ├── decryption.py
 │   │   ├── encryption.py
+│   │   ├── __init__.py
 │   │   ├── text_files
-│   │   │   ├── raw_text.txt
+│   │   │   ├── decrypted_text.txt
 │   │   │   ├── encrypted_text.txt
-│   │   │   └── decrypted_text.txt
+│   │   │   └── raw_text.txt
 │   │   └── verify.py
-│   └── math_evaluator
+│   └── math_evaluator # codes and txt files for question 1
 │       ├── evaluator.py
 │       ├── __init__.py
 │       └── text_files
-│           ├── sample_input.txt
-│           ├── sample_output.txt
+│           ├── input.txt
 │           └── output.txt
-└── tests
+└── tests 
     ├── conftest.py
-    ├── test_cipher.py
-    ├── test_decryption.py
-    ├── test_encryption.py
-    ├── test_math_evaluator.py
-    └── test_verify.py
+    ├── test_cipher_text
+    │   ├── test_cipher.py
+    │   ├── test_decryption.py
+    │   ├── test_encryption.py
+    │   └── test_verify.py
+    └── test_math_evaluator
+        └── test_math_evaluator.py
 ```
 
-## Question 1 – Cipher
+## Setup, Usage, and Testing
 
-### Cipher Rules
+All commands should be executed from the root directory of the project. 
 
-| Character | What happens |
-|---|---|
-| Lowercase `a`–`n` | shifted forward by `shift1 × shift2` |
-| Lowercase `o`–`z` | shifted backward by `shift1 + shift2` |
-| Uppercase `A`–`M` | shifted backward by `shift1` |
-| Uppercase `N`–`Z` | shifted forward by `shift2²` |
-| Digits `0`–`9` | shifted forward by `shift1 − shift2` |
-| Spaces, tabs, newlines, punctuation, symbols | left unchanged |
+### 1. Virtual Environment Setup
 
-Each character range wraps around within its own range.
-
-### Input / Output File Handling
-
-The programs use the expected text-file paths when those files exist.
-
-If the expected bundled input file is missing, a small built-in fallback input is stored in the corresponding Python file. The program uses that fallback, prints a message in the terminal, and creates the missing input file so the program can still be demonstrated.
-
-Output directories are created automatically when needed. Generated output is written to the expected output file and the generated content is also displayed in the terminal.
-
-This fallback behaviour is limited to the program's expected bundled paths. Tests that deliberately pass an unrelated missing path still exercise the normal missing-file error behaviour.
-
-### How to Run
-
-From the project root:
-
+**Linux / macOS**
 ```bash
-cd HIT137-Assessment-2
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip
+python3 -m pip install -r requirements.txt
 ```
 
-The complete Question 1 workflow can be run with:
+**Windows (PowerShell / Command Prompt)**
+```powershell
+py -3 -m venv .venv
+# PowerShell:
+.\.venv\Scripts\Activate.ps1
+# Command Prompt:
+.venv\Scripts\activate
 
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+### 2. Running the Programs
+
+**Task 1: Cipher Pipeline**
+To run the complete encryption, decryption, and verification workflow:
 ```bash
 python3 src/cipher_text/cipher.py
 ```
+*Note: You will be prompted in the terminal to enter the integer values for `shift1` and `shift2`.*
 
-Enter the same `shift1` and `shift2` values for encryption and decryption.
-
-Run encryption only:
-
+The individual components can also be executed standalone:
 ```bash
 python3 src/cipher_text/encryption.py
-```
-
-Run decryption only:
-
-```bash
 python3 src/cipher_text/decryption.py
-```
-
-Run verification only:
-
-```bash
 python3 src/cipher_text/verify.py
 ```
 
-## Question 2 – Mathematical Evaluator
-
-### Supported Features
-
-The evaluator supports:
-
-- `+`, `-`, `*`, `/`, `%`
-- exponentiation `^`
-- nested parentheses
-- unary negation such as `-5`, `--5`, and `-(3 + 4)`
-- implicit multiplication where permitted by the assignment
-- errors for unsupported unary `+`
-- errors for invalid characters and invalid expressions
-- division-by-zero and modulo-by-zero errors
-- formatted results with whole numbers shown without `.0` and other results rounded to four decimal places
-
-The output contains four lines per expression:
-
-```text
-Input: ...
-Tree: ...
-Tokens: ...
-Result: ...
-```
-
-### How to Run
-
-Run the evaluator with its bundled sample input:
-
+**Task 2: Math Evaluator**
+To evaluate the mathematical expressions in the default input file:
 ```bash
 python3 src/math_evaluator/evaluator.py
 ```
-
-Or provide another input file:
-
+To evaluate a specific target file, pass the file path as an argument. The program will generate an `output.txt` in the exact same directory as the input file:
 ```bash
-python3 src/math_evaluator/evaluator.py path/to/input.txt
+python3 src/math_evaluator/evaluator.py path/to/your/input.txt
 ```
 
-The evaluator writes `output.txt` into the same directory as the input file. It also prints each generated four-line result block to the terminal.
+### 3. Running the Tests
 
-If the expected bundled sample input is missing, `evaluator.py` uses its built-in list of sample expressions, creates the missing input file, and continues.
+The project uses `pytest` to validate cipher wrapping logic, mathematical parsing precedence, tree generation, and edge-case error handling.
 
-## Virtual Environment and Requirements
-
-### Linux
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install --upgrade pip
-python3 -m pip install -r requirements.txt
-```
-
-### macOS
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install --upgrade pip
-python3 -m pip install -r requirements.txt
-```
-
-### Windows PowerShell
-
-```powershell
-py -3 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-```
-
-If `python3` is available on Windows, the test commands below can also be used exactly as written. Otherwise, use `python -m pytest ...`.
-
-### Windows Command Prompt
-
-```cmd
-py -3 -m venv .venv
-.venv\Scripts\activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-```
-
-## Tests
-
-Run each test file separately from the project root using `python3 -m pytest path`:
-
-```bash
-python3 -m pytest tests/test_cipher.py
-python3 -m pytest tests/test_decryption.py
-python3 -m pytest tests/test_encryption.py
-python3 -m pytest tests/test_math_evaluator.py
-python3 -m pytest tests/test_verify.py
-```
-
-Run all tests together:
-
+**Run the full test suite:**
 ```bash
 python3 -m pytest tests
 ```
 
-Run all tests with verbose output:
-
+**Run with verbose output:**
 ```bash
 python3 -m pytest -v tests
 ```
 
-The tests cover the cipher character transformations, wrapping, encryption/decryption round trips, invalid shifts, missing and empty files, evaluator tokenization, parsing, tree generation, calculation errors, output-file generation, and verification.
-
-## Main Files
-
-- `src/cipher_text/cipher.py` — runs the complete Question 1 pipeline.
-- `src/cipher_text/encryption.py` — implements encryption.
-- `src/cipher_text/decryption.py` — implements decryption.
-- `src/cipher_text/verify.py` — compares the original and decrypted files.
-- `src/math_evaluator/evaluator.py` — tokenizes, parses, evaluates, formats, and writes Question 2 results.
-- `tests/` — pytest test suite for both questions.
-- `docs/HIT137_assignment2.md` — assignment requirements supplied for this submission.
-- `github_link.txt` — location for the public GitHub repository link.
-
-
+**Run specific test modules:**
+```bash
+python3 -m pytest tests/test_cipher_text/test_encryption.py
+python3 -m pytest tests/test_math_evaluator/test_math_evaluator.py
+```
