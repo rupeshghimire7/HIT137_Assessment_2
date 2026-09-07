@@ -44,6 +44,8 @@ The logic correctly processes nested parentheses and flags unsupported operation
 
 ```text
 .
+├── .github/workflows # contains workflow
+│   └── ci.yml
 ├── docs # contains documentations of assignment
 │   ├── HIT137_assignment2.md
 │   ├── HIT137 Assignment 2 S2 2026.pdf
@@ -152,3 +154,7 @@ python3 -m pytest -v tests
 python3 -m pytest tests/test_cipher_text/test_encryption.py
 python3 -m pytest tests/test_math_evaluator/test_math_evaluator.py
 ```
+
+## Automated Workflow
+
+The github workflow contains testing with pytest and coverage test that will run automated flow of tests when code is pushed into `main` branch or if a pull request is made to `main` branch.
